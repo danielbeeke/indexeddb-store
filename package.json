@@ -1,0 +1,21 @@
+{
+  "name": "indexed-store",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/n3": "^1.10.4",
+    "n3": "^1.16.3",
+    "typescript": "^4.9.3",
+    "vite": "^4.1.0"
+  },
+  "dependencies": {
+    "@rdfjs/data-model": "^2.0.1",
+    "asynciterator": "^3.8.0"
+  }
+}
