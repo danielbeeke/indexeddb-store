@@ -1,8 +1,8 @@
 import { Quad, DataFactory } from 'n3'
-import { IndexedStore } from '../lib/main'
+import { IndexedDBStore } from '../lib/main'
 const { namedNode, literal } = DataFactory
 
-const store = new IndexedStore({ name: 'example' })
+const store = new IndexedDBStore({ name: 'example' })
 
 await store.install()
 
