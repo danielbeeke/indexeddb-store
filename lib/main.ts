@@ -55,35 +55,12 @@ export class IndexedDBStore {
   }
 
   match (subject?: Term, predicate?: Term, object?: Term, graph?: Term) {
-    const matches: Array<Quad> = []
-
-    const promise = new Promise(async (resolve, reject) => {
-      this.transact((store) => {
-        const request = store.openCursor()
-        request.onsuccess = (event) => {
-          const cursor = (event.target as any).result
-          if (cursor) {
-            const quad = cursor.value
-
-            if (
-              (subject ? subject.equals(quad.subject) : true) &&
-              (predicate ? predicate.equals(quad.predicate) : true) &&
-              (object ? object.equals(quad.object) : true) &&
-              (graph ? graph.equals(quad.graph) : true)) 
-            {
-              matches.push(quad)
-            }
-
-            cursor.continue()
-          }
-          else {
-            resolve(matches)
-          }
-        }  
-      })  
-    }) as Promise<Array<Quad>>
-
-    return wrap<Quad>(promise)
+    return wrap(this.cursor((quad) => 
+      (subject ? subject.equals(quad.subject) : true) &&
+      (predicate ? predicate.equals(quad.predicate) : true) &&
+      (object ? object.equals(quad.object) : true) &&
+      (graph ? graph.equals(quad.graph) : true)
+    ))
   }
 
   transact (callback: (store: IDBObjectStore) => any) {
@@ -95,5 +72,34 @@ export class IndexedDBStore {
       const store = transaction.objectStore('quads')  
       response = callback(store)
     })
+  }
+
+  /**
+   * TODO investigate if it is possible to have a range with bounds.
+   * TODO investigate a stream
+   * 
+   * @param filterCallback 
+   * @returns 
+   */
+  cursor (filterCallback: (quad: Quad) => boolean) {
+    const matches: Array<Quad> = []
+
+    return new Promise(async (resolve, reject) => {
+      this.transact((store) => {
+        const request = store.openCursor()
+        request.onerror = reject
+        request.onsuccess = (event) => {
+          const cursor = (event.target as any).result
+          if (cursor) {
+            if (filterCallback(cursor.value)) matches.push(cursor.value)
+            cursor.continue()
+          }
+          else {
+            resolve(matches)
+          }
+        }  
+      })  
+    }) as Promise<Array<Quad>>
+
   }
 }
